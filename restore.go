@@ -99,7 +99,7 @@ func restoreAction(c *cli.Context) error {
 		os.Getenv(srv),
 		"-d",
 		c.String("chado-database"),
-		filepath.Join(c.String("copy-to"), c.String("archive-name")),
+		filepath.Join(c.String("move-to"), c.String("archive-name")),
 	}
 	out, err := exec.Command(pg, rcmd...).CombinedOutput()
 	if err != nil {
