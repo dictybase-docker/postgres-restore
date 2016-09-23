@@ -100,12 +100,14 @@ func restoreAction(c *cli.Context) error {
 		if err != nil {
 			return cli.NewExitError(err.Error(), 2)
 		}
+		log.Printf("moved the file from %s to %s\n", from, to)
 	} else {
 		if _, err := os.Stat(to); os.IsNotExist(err) {
 			err := moveFile(from, to)
 			if err != nil {
 				return cli.NewExitError(err.Error(), 2)
 			}
+			log.Printf("moved the file from %s to %s\n", from, to)
 		}
 	}
 
@@ -114,7 +116,9 @@ func restoreAction(c *cli.Context) error {
 	if err != nil {
 		return cli.NewExitError(err.Error(), 2)
 	}
-	srv := fmt.Sprintf("$%s_%s", strings.ToUpper(c.String("service-name")), "SERVICE_HOST")
+	sname := strings.ToUpper(strings.NewReplacer("-", "_").Replace(c.String("service-name")))
+	srv := fmt.Sprintf("%s_%s", sname, "SERVICE_HOST")
+	log.Printf("service env %s\n", srv)
 	rcmd := []string{
 		"-j",
 		"4",
@@ -130,7 +134,7 @@ func restoreAction(c *cli.Context) error {
 		c.String("chado-database"),
 		filepath.Join(to),
 	}
-	log.Printf("going to run the cmd %s", rcmd)
+	log.Printf("going to run the cmd %s\n", rcmd)
 	out, err := exec.Command(pg, rcmd...).CombinedOutput()
 	if err != nil {
 		log.Printf("output => %s", out)
