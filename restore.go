@@ -110,7 +110,7 @@ func restoreAction(c *cli.Context) error {
 	}
 
 	// now run the restore
-	pg, err := exec.LookPath("pg-restore")
+	pg, err := exec.LookPath("pg_restore")
 	if err != nil {
 		return cli.NewExitError(err.Error(), 2)
 	}
