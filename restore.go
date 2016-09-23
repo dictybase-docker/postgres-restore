@@ -34,11 +34,6 @@ func main() {
 			EnvVar: "CHADO_USER",
 		},
 		cli.StringFlag{
-			Name:   "chado-pass",
-			Usage:  "chado database password",
-			EnvVar: "CHADO_PASS",
-		},
-		cli.StringFlag{
 			Name:   "chado-database",
 			Usage:  "name of chado database",
 			EnvVar: "CHADO_DB",
@@ -67,7 +62,7 @@ func restoreAction(c *cli.Context) error {
 	}
 	from := filepath.Join(c.String("move-from"), c.String("archive-name"))
 	to := filepath.Join(c.String("move-to"), c.String("archive-name"))
-	if _, err := os.Stat(to); os.IsNotExist(err) {
+	if _, err := os.Stat(c.String("move-to")); os.IsNotExist(err) {
 		err = os.MkdirAll(to, os.ModeDir)
 		if err != nil {
 			return cli.NewExitError(err.Error(), 2)
@@ -99,7 +94,7 @@ func restoreAction(c *cli.Context) error {
 		os.Getenv(srv),
 		"-d",
 		c.String("chado-database"),
-		filepath.Join(c.String("move-to"), c.String("archive-name")),
+		filepath.Join(to),
 	}
 	out, err := exec.Command(pg, rcmd...).CombinedOutput()
 	if err != nil {
