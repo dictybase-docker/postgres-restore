@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -56,23 +57,56 @@ func validateArgs(c *cli.Context) error {
 	return nil
 }
 
+func moveFile(from, to string) error {
+	if _, err := os.Stat(from); os.IsNotExist(err) {
+		return fmt.Errorf("source file %s does not exist", from)
+	}
+	src, err := os.Open(from)
+	if err != nil {
+		return err
+	}
+	dest, err := os.Create(to)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(dest, src)
+	if err != nil {
+		return err
+	}
+	src.Close()
+	dest.Close()
+
+	err = os.Remove(from)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func restoreAction(c *cli.Context) error {
 	if err := validateArgs(c); err != nil {
 		return cli.NewExitError(err.Error(), 2)
 	}
 	from := filepath.Join(c.String("move-from"), c.String("archive-name"))
 	to := filepath.Join(c.String("move-to"), c.String("archive-name"))
-	if _, err := os.Stat(c.String("move-to")); os.IsNotExist(err) {
+
+	_, err := os.Stat(c.String("move-to"))
+	if os.IsNotExist(err) {
 		err = os.MkdirAll(to, os.ModeDir)
 		if err != nil {
 			return cli.NewExitError(err.Error(), 2)
 		}
-	}
-
-	// move the file
-	err := os.Rename(from, to)
-	if err != nil {
-		return cli.NewExitError(err.Error(), 2)
+		err := moveFile(from, to)
+		if err != nil {
+			return cli.NewExitError(err.Error(), 2)
+		}
+	} else {
+		if _, err := os.Stat(to); os.IsNotExist(err) {
+			err := moveFile(from, to)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 2)
+			}
+		}
 	}
 
 	// now run the restore
