@@ -130,10 +130,10 @@ func restoreAction(c *cli.Context) error {
 		c.String("chado-database"),
 		filepath.Join(to),
 	}
-	log.Println("before running the cmd")
+	log.Printf("going to run the cmd %s", rcmd)
 	out, err := exec.Command(pg, rcmd...).CombinedOutput()
-	log.Println("just ran the cmd")
 	if err != nil {
+		log.Printf("output => %s", out)
 		return cli.NewExitError(fmt.Sprintf("%s-%s", "error in running command", err.Error()), 2)
 	}
 	log.Println(out)
