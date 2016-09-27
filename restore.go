@@ -124,10 +124,7 @@ func restoreAction(c *cli.Context) error {
 	sname := strings.ToUpper(strings.NewReplacer("-", "_").Replace(c.String("service-name")))
 	srv := fmt.Sprintf("%s_%s", sname, "SERVICE_HOST")
 	log.Printf("service env %s\n", srv)
-	pass := fmt.Sprintf("PGPASSWORD=%s", c.String("chado-password"))
-	log.Printf("chado password %s\n", pass)
 	rcmd := []string{
-		pass,
 		"-j",
 		"4",
 		"-Fc",
@@ -143,7 +140,9 @@ func restoreAction(c *cli.Context) error {
 		filepath.Join(to),
 	}
 	log.Printf("going to run the cmd %s\n", rcmd)
-	out, err := exec.Command(pg, rcmd...).CombinedOutput()
+	cmd := exec.Command(pg, rcmd...)
+	cmd.Env = []string{fmt.Sprintf("PGPASSWORD=%s", c.String("chado-password"))}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("output => %s", out)
 		return cli.NewExitError(fmt.Sprintf("%s-%s", "error in running command", err.Error()), 2)
