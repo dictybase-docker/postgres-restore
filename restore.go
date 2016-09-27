@@ -40,6 +40,11 @@ func main() {
 			EnvVar: "CHADO_DB",
 		},
 		cli.StringFlag{
+			Name:   "chado-password",
+			Usage:  "password of chado database",
+			EnvVar: "CHADO_PASS",
+		},
+		cli.StringFlag{
 			Name:  "service-name",
 			Usage: "kubernetes service name for chado database",
 		},
@@ -119,7 +124,10 @@ func restoreAction(c *cli.Context) error {
 	sname := strings.ToUpper(strings.NewReplacer("-", "_").Replace(c.String("service-name")))
 	srv := fmt.Sprintf("%s_%s", sname, "SERVICE_HOST")
 	log.Printf("service env %s\n", srv)
+	pass := fmt.Sprintf("PGPASSWORD=%s", c.String("chado-password"))
+	log.Printf("chado password %s\n", pass)
 	rcmd := []string{
+		pass,
 		"-j",
 		"4",
 		"-Fc",
